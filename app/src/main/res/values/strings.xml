@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Debate Quick Tabs</string>
+    <string name ="API_Key">"AIzaSyAI48f4O7AmzcFeDOBFfyq77HCG94UuWvY"</string>
 </resources>

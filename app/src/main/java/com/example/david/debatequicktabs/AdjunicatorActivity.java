@@ -1,8 +1,16 @@
 package com.example.david.debatequicktabs;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.api.client.extensions.android.http.AndroidHttp;
+import com.google.api.client.auth.oauth2.Credential;
+import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
+import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.util.store.FileDataStoreFactory;
+import com.google.api.services.sheets.v4.Sheets;
+import com.google.api.services.sheets.v4.SheetsScopes;
+import com.google.api.services.sheets.v4.model.ValueRange;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
@@ -36,6 +44,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.EditText;
+import android.util.Log;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -52,13 +61,28 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Iterator;
 
+import javax.net.ssl.HttpsURLConnection;
+
 import org.json.JSONObject;
 
-import javax.net.ssl.HttpsURLConnection;
-//import androidlabs.gsheets2.R;
-
-import pub.devrel.easypermissions.AfterPermissionGranted;
-import pub.devrel.easypermissions.EasyPermissions;
+import com.google.api.client.auth.oauth2.Credential;
+import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
+import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
+import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
+import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.util.store.FileDataStoreFactory;
+import com.google.api.services.sheets.v4.Sheets;
+import com.google.api.services.sheets.v4.SheetsScopes;
+import com.google.api.services.sheets.v4.model.ValueRange;
+import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
+import java.util.Collections;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import com.google.api.client.auth.oauth2.Credential;
 
 public class AdjunicatorActivity extends Activity {
     GoogleAccountCredential mCredential;
@@ -73,25 +97,41 @@ public class AdjunicatorActivity extends Activity {
 
     private static final String BUTTON_TEXT = "Call Google Sheets API";
     private static final String PREF_ACCOUNT_NAME = "accountName";
-    private static final String[] SCOPES = { SheetsScopes.SPREADSHEETS_READONLY };
+    private static final List<String> SCOPES = Collections.singletonList(SheetsScopes.SPREADSHEETS_READONLY);
+
+    private static final String APPLICATION_NAME = "Debate Mobile Adjundication";
+    private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
+    private static final String TOKENS_DIRECTORY_PATH = "tokens";
+
+    /**
+     * Global instance of the scopes required by this quickstart.
+     * If modifying these scopes, delete your previously saved tokens/ folder.
+     */
+    //private static final List<String> SCOPES = Collections.singletonList(SheetsScopes.SPREADSHEETS_READONLY);
+    private static final String CREDENTIALS_FILE_PATH = "/credentials.json";
 
     /**
      * Create the main activity.
+     *
      * @param savedInstanceState previously saved instance data.
      */
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
         EditText urlInput = (EditText) findViewById(R.id.spreadsheetURL);
-        EditText teamNameInput = (EditText)findViewById(R.id.govTeamName);
-        EditText firstSpeakerInput = (EditText)findViewById(R.id.firstGovSpeaker);
-        EditText firstPointInput = (EditText)findViewById(R.id.firstGovPoints);
-        EditText secondSpeakerInput = (EditText)findViewById(R.id.secondGovSpeaker);
-        EditText secondPointInput = (EditText)findViewById(R.id.secondGovPoints);
+        EditText teamNameInput = (EditText) findViewById(R.id.govTeamName);
+        EditText firstSpeakerInput = (EditText) findViewById(R.id.firstGovSpeaker);
+        EditText firstPointInput = (EditText) findViewById(R.id.firstGovPoints);
+        EditText secondSpeakerInput = (EditText) findViewById(R.id.secondGovSpeaker);
+        EditText secondPointInput = (EditText) findViewById(R.id.secondGovPoints);
+        EditText roundInfo = (EditText) findViewById(R.id.roundNum);
 
         final String sheetURL = urlInput.getText().toString();
+        int roundNum = Integer.parseInt(roundInfo.getText().toString());
         String teamName = teamNameInput.getText().toString();
         String speaker[] = new String[2];
         speaker[0] = firstSpeakerInput.getText().toString();
@@ -102,13 +142,13 @@ public class AdjunicatorActivity extends Activity {
         speakerPoints[1] = Integer.parseInt(secondPointInput.getText().toString());
         int totalPoints = speakerPoints[0] + speakerPoints[1];
 
-        Team govTeam = new Team(teamName, speaker, speakerPoints, totalPoints);
+        final Team govTeam = new Team(teamName, speaker, speakerPoints, totalPoints);
 
-        teamNameInput = (EditText)findViewById(R.id.oppTeamName);
-        firstSpeakerInput = (EditText)findViewById(R.id.firstOppSpeaker);
-        firstPointInput = (EditText)findViewById(R.id.firstOppPoints);
-        secondSpeakerInput = (EditText)findViewById(R.id.secondOppSpeaker);
-        secondPointInput = (EditText)findViewById(R.id.secondOppPoints);
+        teamNameInput = (EditText) findViewById(R.id.oppTeamName);
+        firstSpeakerInput = (EditText) findViewById(R.id.firstOppSpeaker);
+        firstPointInput = (EditText) findViewById(R.id.firstOppPoints);
+        secondSpeakerInput = (EditText) findViewById(R.id.secondOppSpeaker);
+        secondPointInput = (EditText) findViewById(R.id.secondOppPoints);
 
         teamName = teamNameInput.getText().toString();
         speaker[0] = firstSpeakerInput.getText().toString();
@@ -117,126 +157,82 @@ public class AdjunicatorActivity extends Activity {
         speakerPoints[1] = Integer.parseInt(secondPointInput.getText().toString());
         totalPoints = speakerPoints[0] + speakerPoints[1];
 
-        Team oppTeam = new Team(teamName, speaker, speakerPoints, totalPoints);
+        final Team oppTeam = new Team(teamName, speaker, speakerPoints, totalPoints);
+
+        if (govTeam.teamScore > oppTeam.teamScore) {
+            govTeam.win = 1; //1 means team won, 0 means team lost
+            oppTeam.win = 0;
+        } else { //Debate should never end in a tie, thus speaker scores show never be equal
+            govTeam.win = 0;
+            oppTeam.win = 1;
+        }
 
         Button doneBtn = (Button) findViewById(R.id.doneBtn);
         doneBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
-                //Assume all people/Teams have been listed in the spreadsheet
-                //postDataParamas.put
-                new SendRequest(sheetURL).execute();
+                final NetHttpTransport HTTP_TRANSPORT = new com.google.api.client.http.javanet.NetHttpTransport();
+                final String spreadsheetId = sheetURL.substring(38,82);
+                //Range for speakers: A2:G
+                //Range for teams: A2:F
+                final String range = "Raw Speaker Data: A2:G";
+                Sheets service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+                        .setApplicationName(APPLICATION_NAME)
+                        .build();
+                ValueRange response = service.spreadsheets().values()
+                        .get(spreadsheetId, range).execute();
+                List<List<Object>> values = response.getValues();
+
+                for (int i = 0; i < 4; i++) {
+                    for (List row: values) {
+                        if (i == 1) {
+                            if (row.equals(govTeam.speakerNames[0].toLowerCase())) {
+                                //UpdateValuesResponse result =
+                                       // service.spreadsheets().values().update(spreadsheetId, range)
+                                           //     .setValueInputOption(valueInputOption)
+                                           //     .execute();
+                            } else if (row.equals(govTeam.speakerNames[1].toLowerCase())) {
+
+                            } else if (row.equals(oppTeam.speakerNames[0].toLowerCase())) {
+
+                            } else if (row.equals(oppTeam.speakerNames[1].toLowerCase())) {
+
+                            }
+                        }
+                    }
+                }
+
+                for (int j = 0; j < 2; j++) {
+                    for (List row: values) {
+                        if (j == 1) {
+                            if (row.equals(govTeam.teamName.toLowerCase())) {
+
+                            } else if (row.equals(oppTeam.teamName.toLowerCase())) {
+
+                            }
+                        }
+                    }
+                }
+
             }
+
         });
 
     }
-}  public class SendRequest extends AsyncTask<String, Void, String> {
+    private static Credential getCredentials (final NetHttpTransport HTTP_TRANSPORT) throws
+            IOException {
+        // Load client secrets.
+        InputStream in = AdjunicatorActivity.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
+        GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
 
-    String inputURL;
-
-    public SendRequest(String inputURL) {
-        this.inputURL = inputURL;
-    }
-
-    protected void onPreExecute(){}
-
-    protected String doInBackground(String... arg0) {
-
-        try{
-
-            URL url = new URL(inputURL);
-            // https://script.google.com/macros/s/AKfycbyuAu6jWNYMiWt9X5yp63-hypxQPlg5JS8NimN6GEGmdKZcIFh0/exec
-            JSONObject postDataParams = new JSONObject();
-
-            for (int i = 0; i < inputURL.length(); i++) {
-                if (inputURL.charAt(i).contentEquals('/')) {
-
-                }
-            }
-
-            String id= "1hYZGyo5-iFpuwofenZ6s-tsaFPBQRSx9HQYydigA4Dg";
-
-            postDataParams.put("name",name);
-            postDataParams.put("country",country);
-            postDataParams.put("id",id);
-
-
-            Log.e("params",postDataParams.toString());
-
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setReadTimeout(15000 /* milliseconds */);
-            conn.setConnectTimeout(15000 /* milliseconds */);
-            conn.setRequestMethod("POST");
-            conn.setDoInput(true);
-            conn.setDoOutput(true);
-
-            OutputStream os = conn.getOutputStream();
-            BufferedWriter writer = new BufferedWriter(
-                    new OutputStreamWriter(os, "UTF-8"));
-            writer.write(getPostDataString(postDataParams));
-
-            writer.flush();
-            writer.close();
-            os.close();
-
-            int responseCode=conn.getResponseCode();
-
-            if (responseCode == HttpsURLConnection.HTTP_OK) {
-
-                BufferedReader in=new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                StringBuffer sb = new StringBuffer("");
-                String line="";
-
-                while((line = in.readLine()) != null) {
-
-                    sb.append(line);
-                    break;
-                }
-
-                in.close();
-                return sb.toString();
-
-            }
-            else {
-                return new String("false : "+responseCode);
-            }
-        }
-        catch(Exception e){
-            return new String("Exception: " + e.getMessage());
-        }
-    }
-
-    @Override
-    protected void onPostExecute(String result) {
-        Toast.makeText(getApplicationContext(), result,
-                Toast.LENGTH_LONG).show();
-
-    }
-}
-
-    public String getPostDataString(JSONObject params) throws Exception {
-
-        StringBuilder result = new StringBuilder();
-        boolean first = true;
-
-        Iterator<String> itr = params.keys();
-
-        while(itr.hasNext()){
-
-            String key= itr.next();
-            Object value = params.get(key);
-
-            if (first)
-                first = false;
-            else
-                result.append("&");
-
-            result.append(URLEncoder.encode(key, "UTF-8"));
-            result.append("=");
-            result.append(URLEncoder.encode(value.toString(), "UTF-8"));
-
-        }
-        return result.toString();
+        // Build flow and trigger user authorization request.
+        GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
+                HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
+                .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
+                .setAccessType("offline")
+                .build();
+        LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8888).build();
+        return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
     }
 }
 

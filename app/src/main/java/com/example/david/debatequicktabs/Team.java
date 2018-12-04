@@ -6,7 +6,7 @@ public class Team {
     String[] speakerNames;
     int[] speakerScores;
     int teamScore;
-    boolean win;
+    int win;
 
     public Team(String teamName, String[] speakerNames, int[] speakerScores, int teamScore) {
         this.teamName = teamName;
