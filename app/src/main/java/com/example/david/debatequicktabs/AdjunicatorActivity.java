@@ -113,22 +113,11 @@ public class AdjunicatorActivity extends Activity{
 
         final NetHttpTransport HTTP_TRANSPORT = new com.google.api.client.http.javanet.NetHttpTransport();
         final String spreadsheetId = sheetURL.substring(38, 82);
-        /*
-        Button doneBtn = (Button) findViewById(R.id.doneBtn);
-        doneBtn.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v){
-
-                //AdjunicatorActivityException sendData = new AdjunicatorActivityException(govTeam, oppTeam, HTTP_TRANSPORT, spreadsheetId);
-                //postData(sendData);
-                Intent intent = new Intent(getApplicationContext(),AddItem.class);
-                startActivity(intent);
-
-
-    } */
+        
         Button doneBtn = (Button) findViewById(R.id.doneBtn);
         doneBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                
+
                 postData(govTeam, oppTeam, HTTP_TRANSPORT, spreadsheetId);
             }
         });
