@@ -22,8 +22,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.LinearLayout;
-import android.widget.TextView;
+import android.content.Intent;
 import android.widget.EditText;
 import android.util.Log;
 
@@ -36,11 +35,14 @@ import java.io.InputStreamReader;
 
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
+
+import org.mortbay.jetty.HttpOnlyCookie;
+
 import java.util.Collections;
 import java.io.InputStream;
 
 
-public class AdjunicatorActivity extends Activity {
+public class AdjunicatorActivity extends Activity{
 
     static final int REQUEST_ACCOUNT_PICKER = 1000;
     static final int REQUEST_AUTHORIZATION = 1001;
@@ -59,6 +61,7 @@ public class AdjunicatorActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_adjunicator);
 
         //Takes input from activity
         EditText urlInput = (EditText) findViewById(R.id.spreadsheetURL);
@@ -110,72 +113,81 @@ public class AdjunicatorActivity extends Activity {
 
         final NetHttpTransport HTTP_TRANSPORT = new com.google.api.client.http.javanet.NetHttpTransport();
         final String spreadsheetId = sheetURL.substring(38, 82);
-
+        /*
         Button doneBtn = (Button) findViewById(R.id.doneBtn);
         doneBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v){
 
-                //SendData sendData = new SendData(spreadsheetId, HTTP_TRANSPORT);
-                /*
-                postData();
-
-                try {
-
-                } catch (IOException e){
-
-                }*/
-                //postData needs parameters, govTeam, oppTeam, HTTP_Transport, and spreadsheetId
-                //postData(govTeam, oppTeam, spreadsheetId, HTTP_TRANSPORT);
+                //AdjunicatorActivityException sendData = new AdjunicatorActivityException(govTeam, oppTeam, HTTP_TRANSPORT, spreadsheetId);
+                //postData(sendData);
+                Intent intent = new Intent(getApplicationContext(),AddItem.class);
+                startActivity(intent);
 
 
-    } public void postData() throws IOException{
+    } */
+        Button doneBtn = (Button) findViewById(R.id.doneBtn);
+        doneBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                
+                postData(govTeam, oppTeam, HTTP_TRANSPORT, spreadsheetId);
+            }
+        });
+
+
+    } public void postData(Team govTeam, Team oppTeam, NetHttpTransport HTTP_TRANSPORT, String spreadsheetId){
                 //Range for speakers: A2:G
                 //Range for teams: A2:F
                 final String[] range = new String[2];
                 range[0] = "Raw Speaker Data: A2:G";
                 range[1] = "Raw Team Data: A2:F";
-                Sheets service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
-                        .setApplicationName(APPLICATION_NAME)
-                        .build();
-                ValueRange response = service.spreadsheets().values()
-                        .get(spreadsheetId, range[0]).execute();
 
-                List<List<Object>> values = response.getValues();
+        try {
 
-                for (int i = 0; i < 4; i++) { //Counts to store information for the round
-                    for (List row : values) {
-                      //  if (i == 1) {
-                            if (row.equals(govTeam.speakerNames[0].toLowerCase())) { //Enter PM Speaker Score
-                                sendData(spreadsheetId, service, range, govTeam.speakerScores[0]);
+            Sheets service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+                    .setApplicationName(APPLICATION_NAME)
+                    .build();
+            ValueRange response = service.spreadsheets().values()
+                    .get(spreadsheetId, range[0]).execute();
 
-                            } else if (row.equals(govTeam.speakerNames[1].toLowerCase())) { //Enter DPM Speaker Score
-                                sendData(spreadsheetId, service, range, govTeam.speakerScores[1]);
+            List<List<Object>> values = response.getValues();
 
-                            } else if (row.equals(oppTeam.speakerNames[0].toLowerCase())) { //Enter First Opposition Speaker Score
-                                sendData(spreadsheetId, service, range, oppTeam.speakerScores[0]);
+            for (int i = 0; i < 4; i++) { //Counts to store information for the round
+                for (List row : values) {
+                    //  if (i == 1) {
+                    if (row.equals(govTeam.speakerNames[0].toLowerCase())) { //Enter PM Speaker Score
+                        sendData(spreadsheetId, service, range, govTeam.speakerScores[0]);
 
-                            } else if (row.equals(oppTeam.speakerNames[1].toLowerCase())) { //Enter Second opposition Speaker Score
-                                sendData(spreadsheetId, service, range, oppTeam.speakerScores[1]);
-                            }
-                       // }
+                    } else if (row.equals(govTeam.speakerNames[1].toLowerCase())) { //Enter DPM Speaker Score
+                        sendData(spreadsheetId, service, range, govTeam.speakerScores[1]);
+
+                    } else if (row.equals(oppTeam.speakerNames[0].toLowerCase())) { //Enter First Opposition Speaker Score
+                        sendData(spreadsheetId, service, range, oppTeam.speakerScores[0]);
+
+                    } else if (row.equals(oppTeam.speakerNames[1].toLowerCase())) { //Enter Second opposition Speaker Score
+                        sendData(spreadsheetId, service, range, oppTeam.speakerScores[1]);
                     }
+                    // }
                 }
-
-                for (int j = 0; j < 2; j++) {
-                    for (List row : values) {
-                       // if (j == 1) {
-                            if (row.equals(govTeam.teamName.toLowerCase())) {
-                                sendData(spreadsheetId, service, range, govTeam.win);
-                            } else if (row.equals(oppTeam.teamName.toLowerCase())) {
-                                sendData(spreadsheetId, service, range, oppTeam.win);
-                            }
-                      //  }
-                    }
-                }
-
             }
 
-        });
+            for (int j = 0; j < 2; j++) {
+                for (List row : values) {
+                    // if (j == 1) {
+                    if (row.equals(govTeam.teamName.toLowerCase())) {
+                        sendData(spreadsheetId, service, range, govTeam.win);
+                    } else if (row.equals(oppTeam.teamName.toLowerCase())) {
+                        sendData(spreadsheetId, service, range, oppTeam.win);
+                    }
+                    //  }
+                }
+            }
+
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     } public static List<List<Object>> getData (String dataInsert)  {
 
         List<Object> data1 = new ArrayList<Object>();
@@ -186,7 +198,7 @@ public class AdjunicatorActivity extends Activity {
 
         return data;
 
-    } public void sendData(final String spreadsheetId, Sheets service, final String[] range, int information) throws IOException {
+    } public void sendData(final String spreadsheetId, Sheets service, final String[] range, int information) throws IOException{
 
         List<List<Object>> insertValues  = getData(String.valueOf(information));
 
