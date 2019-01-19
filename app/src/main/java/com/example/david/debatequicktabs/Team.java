@@ -4,11 +4,11 @@ public class Team {
 
     String teamName;
     String[] speakerNames;
-    int[] speakerScores;
+    String[] speakerScores;
     int teamScore;
-    int win;
+    String win;
 
-    public Team(String teamName, String[] speakerNames, int[] speakerScores, int teamScore) {
+    public Team(String teamName, String[] speakerNames, String[] speakerScores, int teamScore) {
         this.teamName = teamName;
         this.speakerNames = speakerNames;
         this.speakerScores = speakerScores;
