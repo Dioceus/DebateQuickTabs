@@ -46,7 +46,7 @@ public class AdjunicatorActivity extends Activity{
                 EditText firstPointInput = (EditText) findViewById(R.id.firstGovPoints);
                 EditText secondSpeakerInput = (EditText) findViewById(R.id.secondGovSpeaker);
                 EditText secondPointInput = (EditText) findViewById(R.id.secondGovPoints);
-                EditText totalTeamPoints = (EditText) findViewById(R.id.govTotalPoints);
+                //EditText totalTeamPoints = (EditText) findViewById(R.id.govTotalPoints);
 
                 //Stores input into object Team(starts with storing gov team info)
                 final String sheetURL = urlInput.getText().toString();
@@ -59,10 +59,10 @@ public class AdjunicatorActivity extends Activity{
                 String speakerPoints[] = new String[2];
                 speakerPoints[0] = firstPointInput.getText().toString();
                 speakerPoints[1] = secondPointInput.getText().toString();
-                int totalPoints = Integer.parseInt(totalTeamPoints.getText().toString());
+                //int totalPoints = Integer.parseInt(totalTeamPoints.getText().toString());
                 //int totalPoints = speakerPoints[0] + speakerPoints[1];
 
-                final Team govTeam = new Team(teamName, speaker, speakerPoints, totalPoints);
+                final Team govTeam = new Team(teamName, speaker, speakerPoints);
 
                 //Takes input from activity and stores it into object Team (now it stores info for opp team)
                 teamNameInput = (EditText) findViewById(R.id.oppTeamName);
@@ -70,25 +70,25 @@ public class AdjunicatorActivity extends Activity{
                 firstPointInput = (EditText) findViewById(R.id.firstOppPoints);
                 secondSpeakerInput = (EditText) findViewById(R.id.secondOppSpeaker);
                 secondPointInput = (EditText) findViewById(R.id.secondOppPoints);
-                totalTeamPoints = (EditText) findViewById(R.id.oppTotalPoints);
+               // totalTeamPoints = (EditText) findViewById(R.id.oppTotalPoints);
 
                 teamName = teamNameInput.getText().toString();
                 speaker[0] = firstSpeakerInput.getText().toString();
                 speakerPoints[0] = firstPointInput.getText().toString();
                 speaker[1] = secondSpeakerInput.getText().toString();
                 speakerPoints[1] = secondPointInput.getText().toString();
-                totalPoints = Integer.parseInt(totalTeamPoints.getText().toString());
+               // totalPoints = Integer.parseInt(totalTeamPoints.getText().toString());
                 //totalPoints = speakerPoints[0] + speakerPoints[1];
 
-                final Team oppTeam = new Team(teamName, speaker, speakerPoints, totalPoints);
-
+                final Team oppTeam = new Team(teamName, speaker, speakerPoints);
+                /*
                 if (govTeam.teamScore > oppTeam.teamScore) {
                     govTeam.win = "1"; //1 means team won, 0 means team lost
                     oppTeam.win = "0";
                 } else { //Debates should never end in a tie, thus speaker scores show never be equal
                     govTeam.win = "0";
                     oppTeam.win = "1";
-                }
+                }*/
 
                 final NetHttpTransport HTTP_TRANSPORT = new com.google.api.client.http.javanet.NetHttpTransport();
                 final String spreadsheetId = sheetURL.substring(38, 82);
