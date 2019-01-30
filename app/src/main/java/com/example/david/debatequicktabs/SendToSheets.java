@@ -36,21 +36,22 @@ public class SendToSheets {
     private static final String APPLICATION_NAME = "Debate Mobile Adjudication";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
-    private static final String CREDENTIALS_FILE_PATH = "/credentials.json";
+    private static final String CREDENTIALS_FILE_PATH = "app/res/credentials.json";
+    //I think the problem is the app can't find the credentials.json file
 
     Team govTeam;
     Team oppTeam;
     final NetHttpTransport HTTP_TRANSPORT;
-    final String spreadsheetURL;
+    final String spreadsheetID;
 
-    public SendToSheets(Team govTeam, Team oppTeam, NetHttpTransport HTTP_TRANSPORT, String spreadsheetURL) {
+    public SendToSheets(Team govTeam, Team oppTeam, NetHttpTransport HTTP_TRANSPORT, String spreadsheetID) {
 
         this.govTeam = govTeam;
         this.oppTeam = oppTeam;
         this.HTTP_TRANSPORT = HTTP_TRANSPORT;
-        this.spreadsheetURL = spreadsheetURL;
+        this.spreadsheetID = spreadsheetID;
 
-    } public void postData(Team govTeam, Team oppTeam, NetHttpTransport HTTP_TRANSPORT, String spreadsheetId){
+    } public static void postData(SendToSheets data){
         //Range for speakers: A2:G
         //Range for teams: A2:F
         final String[] range = new String[2];
@@ -59,16 +60,21 @@ public class SendToSheets {
 
         try {
 
-            Sheets service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+            Sheets service = new Sheets.Builder(data.HTTP_TRANSPORT, JSON_FACTORY, getCredentials(data.HTTP_TRANSPORT))
                     .setApplicationName(APPLICATION_NAME)
                     .build();
             ValueRange response = service.spreadsheets().values()
-                    .get(spreadsheetId, range[0]).execute();
+                    .get(data.spreadsheetID, range[0]).execute();
 
             List<List<Object>> values = response.getValues();
-
+            //Haven't sent teamScore info yet
             for (int i = 0; i < 4; i++) { //Counts to store information for the round
                 for (List row : values) {
+                    sendData(data.spreadsheetID, service, range, data.govTeam.speakerScores[0]);
+                    sendData(data.spreadsheetID, service, range, data.govTeam.speakerScores[1]);
+                    sendData(data.spreadsheetID, service, range, data.govTeam.speakerScores[0]);
+                    sendData(data.spreadsheetID, service, range, data.govTeam.speakerScores[1]);
+                    /*
 
                     if (row.equals(govTeam.speakerNames[0].toLowerCase())) { //Enter PM Speaker Score
                         sendData(spreadsheetId, service, range, govTeam.speakerScores[0]);
@@ -81,11 +87,11 @@ public class SendToSheets {
 
                     } else if (row.equals(oppTeam.speakerNames[1].toLowerCase())) { //Enter Second opposition Speaker Score
                         sendData(spreadsheetId, service, range, oppTeam.speakerScores[1]);
-                    }
+                    }*/
 
                 }
             }
-
+            /*
             for (int j = 0; j < 2; j++) {
                 for (List row : values) {
                     if (row.equals(govTeam.teamName.toLowerCase())) {
@@ -94,13 +100,13 @@ public class SendToSheets {
                         sendData(spreadsheetId, service, range, oppTeam.win);
                     }
                 }
-            }
+            }*/
 
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-    } public void sendData(final String spreadsheetId, Sheets service, final String[] range, String information) throws IOException{
+    } public static void sendData(final String spreadsheetId, Sheets service, final String[] range, String information) throws IOException{
 
         List<List<Object>> insertValues  = getData(information);
 
@@ -124,6 +130,7 @@ public class SendToSheets {
     } private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws
             IOException {
         // Load client secrets.
+
         InputStream in = AdjunicatorActivity.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
         GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
 

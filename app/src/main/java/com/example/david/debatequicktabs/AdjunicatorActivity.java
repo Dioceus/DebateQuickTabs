@@ -25,6 +25,11 @@ public class AdjunicatorActivity extends Activity{
     static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
     static final int REQUEST_PERMISSION_GET_ACCOUNTS = 1003;
 
+    private static final String APPLICATION_NAME = "Debate Mobile Adjudication";
+    private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
+    private static final String TOKENS_DIRECTORY_PATH = "tokens";
+    private static final String CREDENTIALS_FILE_PATH = "app/res/credentials.json";
+
     private static final List<String> SCOPES = Collections.singletonList(SheetsScopes.SPREADSHEETS_READONLY);
 
     @Override
@@ -94,7 +99,7 @@ public class AdjunicatorActivity extends Activity{
                 final String spreadsheetId = sheetURL.substring(38, 82);
 
                 SendToSheets debateData = new SendToSheets(govTeam, oppTeam, HTTP_TRANSPORT, spreadsheetId);
-                debateData.postData(govTeam, oppTeam, HTTP_TRANSPORT, spreadsheetId);
+                SendToSheets.postData(debateData);
             }
         });
     }
