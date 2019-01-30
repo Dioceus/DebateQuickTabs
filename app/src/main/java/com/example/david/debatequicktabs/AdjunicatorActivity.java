@@ -1,6 +1,6 @@
 package com.example.david.debatequicktabs;
 
-import com.google.api.client.http.javanet.NetHttpTransport;
+
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.sheets.v4.SheetsScopes;
@@ -95,13 +95,24 @@ public class AdjunicatorActivity extends Activity{
                     oppTeam.win = "1";
                 }*/
 
-                final NetHttpTransport HTTP_TRANSPORT = new com.google.api.client.http.javanet.NetHttpTransport();
-                final String spreadsheetId = sheetURL.substring(38, 82);
-
-                SendToSheets debateData = new SendToSheets(govTeam, oppTeam, HTTP_TRANSPORT, spreadsheetId);
+                //final NetHttpTransport HTTP_TRANSPORT = new com.google.api.client.http.javanet.NetHttpTransport();
+                final String spreadsheetId = getID(sheetURL);
+                SendToSheets debateData = new SendToSheets(govTeam, oppTeam, spreadsheetId);
                 SendToSheets.postData(debateData);
             }
         });
+    } public static String getID(String url) {
+        String id;
+        int i = 39;
+        boolean found = false;
+        while (!found) {
+            if (url.charAt(i) == '/') {
+                found = true;
+            }
+            i++;
+        }
+        id = url.substring(39,i);
+        return id;
     }
 }
 
