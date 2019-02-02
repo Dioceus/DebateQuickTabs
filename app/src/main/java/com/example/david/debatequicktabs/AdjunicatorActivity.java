@@ -39,7 +39,7 @@ public class AdjunicatorActivity extends Activity{
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_adjunicator);
+        setContentView(R.layout.activity_adjudicator);
 
         Button doneBtn = (Button) findViewById(R.id.doneBtn);
         doneBtn.setOnClickListener(new View.OnClickListener() {
@@ -98,7 +98,7 @@ public class AdjunicatorActivity extends Activity{
                     govTeam.win = "0";
                     oppTeam.win = "1";
                 }*/
-                
+
                 try {
                     final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
                     final String spreadsheetId = getID(sheetURL);
