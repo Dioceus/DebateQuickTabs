@@ -43,80 +43,65 @@ public class SendToSheets {
 
     Team govTeam;
     Team oppTeam;
+    RoundInfo roundInfo;
     final String spreadsheetID;
     final NetHttpTransport HTTP_TRANSPORT;
 
-    public SendToSheets(Team govTeam, Team oppTeam, String spreadsheetID, NetHttpTransport HTTP_TRANSPORT) {
+    public SendToSheets(Team govTeam, Team oppTeam, RoundInfo roundInfo, String spreadsheetID, NetHttpTransport HTTP_TRANSPORT) {
 
         this.govTeam = govTeam;
         this.oppTeam = oppTeam;
+        this.roundInfo = roundInfo;
         this.spreadsheetID = spreadsheetID;
         this.HTTP_TRANSPORT = HTTP_TRANSPORT;
 
 
     } public static void postData(SendToSheets data) {
-        //Range for speakers: A2:G
-        //Range for teams: A2:F
-        final String[] range = new String[2];
-        range[0] = "Raw Speaker Data: A2:G";
-        range[1] = "Raw Team Data: A2:F";
+
+        String range = "A2:N";
 
         try {
-            //GeneralSecurityExceptions don't get caught by try catch blocks, only when they are thrown by the caller
+
             Sheets service = new Sheets.Builder(data.HTTP_TRANSPORT, JSON_FACTORY, getCredentials(data.HTTP_TRANSPORT))
                     .setApplicationName(APPLICATION_NAME)
                     .build();
             ValueRange response = service.spreadsheets().values()
-                    .get(data.spreadsheetID, range[0]).execute();
+                    .get(data.spreadsheetID, range).execute();
 
             List<List<Object>> values = response.getValues();
-            //Haven't sent teamScore info yet
-            for (int i = 0; i < 4; i++) { //Counts to store information for the round
-                for (List row : values) {
-                    sendData(data.spreadsheetID, service, range, data.govTeam.speakerScores[0]);
-                    sendData(data.spreadsheetID, service, range, data.govTeam.speakerScores[1]);
-                    sendData(data.spreadsheetID, service, range, data.govTeam.speakerScores[0]);
-                    sendData(data.spreadsheetID, service, range, data.govTeam.speakerScores[1]);
-                    /*
 
-                    if (row.equals(govTeam.speakerNames[0].toLowerCase())) { //Enter PM Speaker Score
-                        sendData(spreadsheetId, service, range, govTeam.speakerScores[0]);
+            for (List row : values) {
 
-                    } else if (row.equals(govTeam.speakerNames[1].toLowerCase())) { //Enter DPM Speaker Score
-                        sendData(spreadsheetId, service, range, govTeam.speakerScores[1]);
+                sendData(data.spreadsheetID, service, range, data.roundInfo.location);
+                sendData(data.spreadsheetID, service, range, data.roundInfo.roundNum);
 
-                    } else if (row.equals(oppTeam.speakerNames[0].toLowerCase())) { //Enter First Opposition Speaker Score
-                        sendData(spreadsheetId, service, range, oppTeam.speakerScores[0]);
+                sendData(data.spreadsheetID, service, range, data.govTeam.teamName);
+                sendData(data.spreadsheetID, service, range, data.govTeam.win);
+                sendData(data.spreadsheetID, service, range, data.govTeam.speakerNames[0]);
+                sendData(data.spreadsheetID, service, range, data.govTeam.speakerScores[0]);
+                sendData(data.spreadsheetID, service, range, data.govTeam.speakerNames[1]);
+                sendData(data.spreadsheetID, service, range, data.govTeam.speakerScores[1]);
 
-                    } else if (row.equals(oppTeam.speakerNames[1].toLowerCase())) { //Enter Second opposition Speaker Score
-                        sendData(spreadsheetId, service, range, oppTeam.speakerScores[1]);
-                    }*/
-
-                }
+                sendData(data.spreadsheetID, service, range, data.oppTeam.teamName);
+                sendData(data.spreadsheetID, service, range, data.oppTeam.win);
+                sendData(data.spreadsheetID, service, range, data.oppTeam.speakerNames[0]);
+                sendData(data.spreadsheetID, service, range, data.oppTeam.speakerScores[0]);
+                sendData(data.spreadsheetID, service, range, data.oppTeam.speakerNames[1]);
+                sendData(data.spreadsheetID, service, range, data.oppTeam.speakerScores[1]);
             }
-            /*
-            for (int j = 0; j < 2; j++) {
-                for (List row : values) {
-                    if (row.equals(govTeam.teamName.toLowerCase())) {
-                        sendData(spreadsheetId, service, range, govTeam.win);
-                    } else if (row.equals(oppTeam.teamName.toLowerCase())) {
-                        sendData(spreadsheetId, service, range, oppTeam.win);
-                    }
-                }
-            }*/
 
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-    } public static void sendData(final String spreadsheetId, Sheets service, final String[] range, String information) throws IOException{
+    } public static void sendData(final String spreadsheetId, Sheets service, final String range, String information) throws IOException{
 
         List<List<Object>> insertValues  = getData(information);
 
         ValueRange body = new ValueRange()
                 .setValues(insertValues);
         UpdateValuesResponse result =
-                service.spreadsheets().values().update(spreadsheetId,  range[0], body)
+                service.spreadsheets().values().update(spreadsheetId,  range, body)
                         .setValueInputOption("RAW")
                         .execute();
 

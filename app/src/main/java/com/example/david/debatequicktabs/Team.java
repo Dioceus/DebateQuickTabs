@@ -12,6 +12,6 @@ public class Team {
         this.teamName = teamName;
         this.speakerNames = speakerNames;
         this.speakerScores = speakerScores;
-        
+
     }
 }

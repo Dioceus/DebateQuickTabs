@@ -36,7 +36,8 @@ public class AdjunicatorActivity extends Activity{
 
                 //Takes input from activity
                 EditText urlInput = (EditText) findViewById(R.id.spreadsheetURL);
-                EditText roundInfo = (EditText) findViewById(R.id.roundNum);
+                EditText roundNumInfo = (EditText) findViewById(R.id.roundNum);
+                EditText roundRoomLocation = (EditText) findViewById(R.id.roomLocation);
 
                 EditText teamNameInput = (EditText) findViewById(R.id.govTeamName);
                 EditText firstSpeakerInput = (EditText) findViewById(R.id.firstGovSpeaker);
@@ -46,7 +47,11 @@ public class AdjunicatorActivity extends Activity{
 
                 //Stores input into object Team(starts with storing gov team info)
                 final String sheetURL = urlInput.getText().toString();
-                int roundNum = Integer.parseInt(roundInfo.getText().toString());
+                String roundNum = roundNumInfo.getText().toString();
+                String roomLocation = roundRoomLocation.toString();
+
+                RoundInfo roundInfo = new RoundInfo(roundNum, roomLocation);
+
                 String teamName = teamNameInput.getText().toString();
                 String speaker[] = new String[2];
                 speaker[0] = firstSpeakerInput.getText().toString();
@@ -86,7 +91,7 @@ public class AdjunicatorActivity extends Activity{
                 try {
                     final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
                     final String spreadsheetId = getID(sheetURL);
-                    SendToSheets debateData = new SendToSheets(govTeam, oppTeam, spreadsheetId, HTTP_TRANSPORT);
+                    SendToSheets debateData = new SendToSheets(govTeam, oppTeam, roundInfo, spreadsheetId, HTTP_TRANSPORT);
                     SendToSheets.postData(debateData);
                 } catch (GeneralSecurityException e) {
                     e.printStackTrace();
