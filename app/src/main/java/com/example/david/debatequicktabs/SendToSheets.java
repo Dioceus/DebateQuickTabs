@@ -17,6 +17,7 @@ import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.*;
 
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -25,6 +26,7 @@ import java.io.InputStreamReader;
 
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
+import com.google.api.client.http.javanet.NetHttpTransport;
 
 import java.util.Collections;
 import java.io.InputStream;
@@ -36,22 +38,23 @@ public class SendToSheets {
     private static final String APPLICATION_NAME = "Debate Mobile Adjudication";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
-    private static final String CREDENTIALS_FILE_PATH = "app/res/credentials.json";
-    //I think the problem is the app can't find the credentials.json file
+    private static final String CREDENTIALS_FILE_PATH = "/credentials.json";
+    //static final NetHttpTransport HTTP_TRANSPORT = new com.google.api.client.http.javanet.NetHttpTransport();
 
     Team govTeam;
     Team oppTeam;
-    final NetHttpTransport HTTP_TRANSPORT;
     final String spreadsheetID;
+    final NetHttpTransport HTTP_TRANSPORT;
 
-    public SendToSheets(Team govTeam, Team oppTeam, NetHttpTransport HTTP_TRANSPORT, String spreadsheetID) {
+    public SendToSheets(Team govTeam, Team oppTeam, String spreadsheetID, NetHttpTransport HTTP_TRANSPORT) {
 
         this.govTeam = govTeam;
         this.oppTeam = oppTeam;
-        this.HTTP_TRANSPORT = HTTP_TRANSPORT;
         this.spreadsheetID = spreadsheetID;
+        this.HTTP_TRANSPORT = HTTP_TRANSPORT;
 
-    } public static void postData(SendToSheets data){
+
+    } public static void postData(SendToSheets data) {
         //Range for speakers: A2:G
         //Range for teams: A2:F
         final String[] range = new String[2];
@@ -59,7 +62,7 @@ public class SendToSheets {
         range[1] = "Raw Team Data: A2:F";
 
         try {
-
+            //GeneralSecurityExceptions don't get caught by try catch blocks, only when they are thrown by the caller
             Sheets service = new Sheets.Builder(data.HTTP_TRANSPORT, JSON_FACTORY, getCredentials(data.HTTP_TRANSPORT))
                     .setApplicationName(APPLICATION_NAME)
                     .build();
@@ -131,10 +134,10 @@ public class SendToSheets {
             IOException {
         // Load client secrets.
 
-        InputStream in = AdjunicatorActivity.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
+        InputStream in = SendToSheets.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
         GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
 
-        // Build flow and trigger user authorization request.
+
         GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
                 HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
                 .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
@@ -142,6 +145,7 @@ public class SendToSheets {
                 .build();
         LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8888).build();
         return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
+
     }
 
 }

@@ -1,6 +1,8 @@
 package com.example.david.debatequicktabs;
 
 
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.sheets.v4.SheetsScopes;
@@ -14,6 +16,8 @@ import android.content.Intent;
 import android.widget.EditText;
 import android.util.Log;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.Collections;
 
@@ -94,11 +98,18 @@ public class AdjunicatorActivity extends Activity{
                     govTeam.win = "0";
                     oppTeam.win = "1";
                 }*/
+                
+                try {
+                    final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+                    final String spreadsheetId = getID(sheetURL);
+                    SendToSheets debateData = new SendToSheets(govTeam, oppTeam, spreadsheetId, HTTP_TRANSPORT);
+                    SendToSheets.postData(debateData);
+                } catch (GeneralSecurityException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
-                //final NetHttpTransport HTTP_TRANSPORT = new com.google.api.client.http.javanet.NetHttpTransport();
-                final String spreadsheetId = getID(sheetURL);
-                SendToSheets debateData = new SendToSheets(govTeam, oppTeam, spreadsheetId);
-                SendToSheets.postData(debateData);
             }
         });
     } public static String getID(String url) {
