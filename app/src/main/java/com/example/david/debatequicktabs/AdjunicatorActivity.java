@@ -24,18 +24,6 @@ import java.util.Collections;
 
 public class AdjunicatorActivity extends Activity{
 
-    static final int REQUEST_ACCOUNT_PICKER = 1000;
-    static final int REQUEST_AUTHORIZATION = 1001;
-    static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
-    static final int REQUEST_PERMISSION_GET_ACCOUNTS = 1003;
-
-    private static final String APPLICATION_NAME = "Debate Mobile Adjudication";
-    private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
-    private static final String TOKENS_DIRECTORY_PATH = "tokens";
-    private static final String CREDENTIALS_FILE_PATH = "app/res/credentials.json";
-
-    private static final List<String> SCOPES = Collections.singletonList(SheetsScopes.SPREADSHEETS_READONLY);
-
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
@@ -55,11 +43,10 @@ public class AdjunicatorActivity extends Activity{
                 EditText firstPointInput = (EditText) findViewById(R.id.firstGovPoints);
                 EditText secondSpeakerInput = (EditText) findViewById(R.id.secondGovSpeaker);
                 EditText secondPointInput = (EditText) findViewById(R.id.secondGovPoints);
-                //EditText totalTeamPoints = (EditText) findViewById(R.id.govTotalPoints);
 
                 //Stores input into object Team(starts with storing gov team info)
                 final String sheetURL = urlInput.getText().toString();
-                //int roundNum = Integer.parseInt(roundInfo.getText().toString());
+                int roundNum = Integer.parseInt(roundInfo.getText().toString());
                 String teamName = teamNameInput.getText().toString();
                 String speaker[] = new String[2];
                 speaker[0] = firstSpeakerInput.getText().toString();
@@ -68,10 +55,9 @@ public class AdjunicatorActivity extends Activity{
                 String speakerPoints[] = new String[2];
                 speakerPoints[0] = firstPointInput.getText().toString();
                 speakerPoints[1] = secondPointInput.getText().toString();
-                //int totalPoints = Integer.parseInt(totalTeamPoints.getText().toString());
-                //int totalPoints = speakerPoints[0] + speakerPoints[1];
+                int totalPoints = Integer.parseInt(speakerPoints[0]) + Integer.parseInt(speakerPoints[1]);
 
-                final Team govTeam = new Team(teamName, speaker, speakerPoints);
+                final Team govTeam = new Team(teamName, speaker, speakerPoints, Integer.toString(totalPoints));
 
                 //Takes input from activity and stores it into object Team (now it stores info for opp team)
                 teamNameInput = (EditText) findViewById(R.id.oppTeamName);
@@ -79,25 +65,23 @@ public class AdjunicatorActivity extends Activity{
                 firstPointInput = (EditText) findViewById(R.id.firstOppPoints);
                 secondSpeakerInput = (EditText) findViewById(R.id.secondOppSpeaker);
                 secondPointInput = (EditText) findViewById(R.id.secondOppPoints);
-               // totalTeamPoints = (EditText) findViewById(R.id.oppTotalPoints);
 
                 teamName = teamNameInput.getText().toString();
                 speaker[0] = firstSpeakerInput.getText().toString();
                 speakerPoints[0] = firstPointInput.getText().toString();
                 speaker[1] = secondSpeakerInput.getText().toString();
                 speakerPoints[1] = secondPointInput.getText().toString();
-               // totalPoints = Integer.parseInt(totalTeamPoints.getText().toString());
-                //totalPoints = speakerPoints[0] + speakerPoints[1];
+                totalPoints = Integer.parseInt(speakerPoints[0]) + Integer.parseInt(speakerPoints[1]);
 
-                final Team oppTeam = new Team(teamName, speaker, speakerPoints);
-                /*
-                if (govTeam.teamScore > oppTeam.teamScore) {
+                final Team oppTeam = new Team(teamName, speaker, speakerPoints, Integer.toString(totalPoints));
+
+                if (Integer.parseInt(govTeam.teamScore) > Integer.parseInt(oppTeam.teamScore)) {
                     govTeam.win = "1"; //1 means team won, 0 means team lost
                     oppTeam.win = "0";
                 } else { //Debates should never end in a tie, thus speaker scores show never be equal
                     govTeam.win = "0";
                     oppTeam.win = "1";
-                }*/
+                }
 
                 try {
                     final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
