@@ -55,7 +55,7 @@ public class SendToSheets {
         this.HTTP_TRANSPORT = HTTP_TRANSPORT;
 
 
-    } public static void postData(SendToSheets data) {
+    } public static void updateSheet(SendToSheets data) {
 
         String range = "A2:N";
 
@@ -111,7 +111,7 @@ public class SendToSheets {
             e.printStackTrace();
         }
 
-    } public static void sendData(final String spreadsheetId, Sheets service, final String range, String information) throws IOException{
+    } private static void sendData(final String spreadsheetId, Sheets service, final String range, String information) throws IOException{
 
         List<List<Object>> insertValues  = getData(information);
 
@@ -122,7 +122,7 @@ public class SendToSheets {
                         .setValueInputOption("RAW")
                         .execute();
 
-    } public static List<List<Object>> getData(String dataInsert)  {
+    } private static List<List<Object>> getData(String dataInsert)  {
 
         List<Object> data1 = new ArrayList<Object>();
         data1.add (dataInsert);

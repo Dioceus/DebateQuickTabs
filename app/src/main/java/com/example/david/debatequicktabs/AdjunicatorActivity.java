@@ -92,7 +92,7 @@ public class AdjunicatorActivity extends Activity{
                     final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
                     final String spreadsheetId = getID(sheetURL);
                     SendToSheets debateData = new SendToSheets(govTeam, oppTeam, roundInfo, spreadsheetId, HTTP_TRANSPORT);
-                    SendToSheets.postData(debateData);
+                    SendToSheets.updateSheet(debateData);
                 } catch (GeneralSecurityException e) {
                     e.printStackTrace();
                 } catch (IOException e) {
