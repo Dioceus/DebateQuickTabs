@@ -54,7 +54,6 @@ public class SendToSheets {
         this.spreadsheetID = spreadsheetID;
         this.HTTP_TRANSPORT = HTTP_TRANSPORT;
 
-
     } public static void updateSheet(SendToSheets data) {
 
         String range = "A2:N";
