@@ -39,7 +39,6 @@ public class SendToSheets {
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
     private static final String CREDENTIALS_FILE_PATH = "/credentials.json";
-    //static final NetHttpTransport HTTP_TRANSPORT = new com.google.api.client.http.javanet.NetHttpTransport();
 
     Team govTeam;
     Team oppTeam;
@@ -68,26 +67,44 @@ public class SendToSheets {
             ValueRange response = service.spreadsheets().values()
                     .get(data.spreadsheetID, range).execute();
 
+            //Reads spreadsheet columns so information can be organized under the correct headings
             List<List<Object>> values = response.getValues();
 
             for (List row : values) {
 
-                sendData(data.spreadsheetID, service, range, data.roundInfo.location);
-                sendData(data.spreadsheetID, service, range, data.roundInfo.roundNum);
-
-                sendData(data.spreadsheetID, service, range, data.govTeam.teamName);
-                sendData(data.spreadsheetID, service, range, data.govTeam.win);
-                sendData(data.spreadsheetID, service, range, data.govTeam.speakerNames[0]);
-                sendData(data.spreadsheetID, service, range, data.govTeam.speakerScores[0]);
-                sendData(data.spreadsheetID, service, range, data.govTeam.speakerNames[1]);
-                sendData(data.spreadsheetID, service, range, data.govTeam.speakerScores[1]);
-
-                sendData(data.spreadsheetID, service, range, data.oppTeam.teamName);
-                sendData(data.spreadsheetID, service, range, data.oppTeam.win);
-                sendData(data.spreadsheetID, service, range, data.oppTeam.speakerNames[0]);
-                sendData(data.spreadsheetID, service, range, data.oppTeam.speakerScores[0]);
-                sendData(data.spreadsheetID, service, range, data.oppTeam.speakerNames[1]);
-                sendData(data.spreadsheetID, service, range, data.oppTeam.speakerScores[1]);
+                if (row.contains("Room".toLowerCase())) {
+                    sendData(data.spreadsheetID, service, range, data.roundInfo.location);
+                } else if (row.contains("Round".toLowerCase())) {
+                    sendData(data.spreadsheetID, service, range, data.roundInfo.roundNum);
+                } else if (row.contains("Gov".toLowerCase())) {
+                    if (row.contains("Team".toLowerCase())) {
+                        sendData(data.spreadsheetID, service, range, data.govTeam.teamName);
+                    } else if(row.contains("Win".toLowerCase())) {
+                        sendData(data.spreadsheetID, service, range, data.govTeam.win);
+                    } else if(row.contains("First".toLowerCase()) && row.contains("Name".toLowerCase())) {
+                        sendData(data.spreadsheetID, service, range, data.govTeam.speakerNames[0]);
+                    } else if(row.contains("First".toLowerCase()) && row.contains("Score".toLowerCase())) {
+                        sendData(data.spreadsheetID, service, range, data.govTeam.speakerScores[0]);
+                    } else if(row.contains("Second".toLowerCase()) && row.contains("Name".toLowerCase())) {
+                        sendData(data.spreadsheetID, service, range, data.govTeam.speakerNames[1]);
+                    } else {
+                        sendData(data.spreadsheetID, service, range, data.govTeam.speakerScores[1]);
+                    }
+                } else if (row.contains("Opp".toLowerCase())) {
+                    if (row.contains("Team".toLowerCase())) {
+                        sendData(data.spreadsheetID, service, range, data.oppTeam.teamName);
+                    } else if(row.contains("Win".toLowerCase())) {
+                        sendData(data.spreadsheetID, service, range, data.oppTeam.win);
+                    } else if(row.contains("First".toLowerCase()) && row.contains("Name".toLowerCase())) {
+                        sendData(data.spreadsheetID, service, range, data.oppTeam.speakerNames[0]);
+                    } else if(row.contains("First".toLowerCase()) && row.contains("Score".toLowerCase())) {
+                        sendData(data.spreadsheetID, service, range, data.oppTeam.speakerScores[0]);
+                    } else if(row.contains("Second".toLowerCase()) && row.contains("Name".toLowerCase())) {
+                        sendData(data.spreadsheetID, service, range, data.oppTeam.speakerNames[1]);
+                    } else {
+                        sendData(data.spreadsheetID, service, range, data.oppTeam.speakerScores[1]);
+                    }
+                }
             }
 
         } catch (IOException e) {
@@ -105,7 +122,7 @@ public class SendToSheets {
                         .setValueInputOption("RAW")
                         .execute();
 
-    } public static List<List<Object>> getData (String dataInsert)  {
+    } public static List<List<Object>> getData(String dataInsert)  {
 
         List<Object> data1 = new ArrayList<Object>();
         data1.add (dataInsert);
@@ -117,11 +134,10 @@ public class SendToSheets {
 
     } private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws
             IOException {
-        // Load client secrets.
 
+        // Load client secrets.
         InputStream in = SendToSheets.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
         GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
-
 
         GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
                 HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
